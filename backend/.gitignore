@@ -1,0 +1,33 @@
+# 1. Virtual Environment (corresponds to node_modules)
+venv/
+.venv/
+env/
+ENV/
+
+# 2. Python Cache and Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 3. Environment Variables and Secrets (you have already added .env)
+.env
+.env.*
+!.env.example
+
+# 4. Flask / Database Related
+instance/
+*.db
+*.sqlite3
+*.log
+
+# 5. Test and Coverage Reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 6. IDE and System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

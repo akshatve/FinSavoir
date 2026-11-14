@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Tell Tailwind v4 to look for the .dark class */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f9fafb; /* gray-50 */
+  --foreground: #111827; /* gray-900 */
+}
+
+.dark {
+  --background: #111827; /* gray-900 */
+  --foreground: #f9fafb; /* gray-50 */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+
+
+
+/* Keep your existing marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite; /* Slightly slowed down for better reading */
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* NEW: Edge fade mask for the marquee */
+.mask-fade-edges {
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Existing marquee stays */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* NEW: Reverse Marquee (Right to Left) */
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-marquee-reverse {
+  animation: marquee-reverse 40s linear infinite;
+}
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+
+
+
+
+
+@keyframes shine {
+  0% {
+    left: -120%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+.animate-shine {
+  animation: shine 2s infinite linear;
+}
+
+
+
+
+
+
+
+
+/* === Overview page scroll arrow === */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 1.6s ease-in-out infinite;
+}
+
+
+
+
+/* === Chatbot Pulse Rings === */
+@keyframes radar-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-radar-1 {
+  animation: radar-ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-radar-2 {
+  animation: radar-ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation-delay: 1.25s;
+}
+
+
+
+

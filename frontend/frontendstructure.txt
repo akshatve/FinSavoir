@@ -1,0 +1,19 @@
+app/
+├── company/
+│   └── [ticker]/
+│       ├── layout.js         <-- The stock header & tabs (Make sure this is here)
+│       ├── page.js           <-- Overview
+│       ├── chart/
+│       │   └── page.js       <-- Chart
+│       ├── financials/
+│       │   └── page.js       <-- Financials
+│       └── news/
+│           └── page.js       <-- News (NO layout.js in here)
+├── components/
+│   ├── Navbar.js             <-- Top navigation
+│   ├── Footer.js             <-- Bottom footer
+│   └── ThemeToggle.js        <-- Light/Dark button
+├── globals.css
+├── layout.js                 <-- Root layout
+├── page.js                   <-- Landing page
+└── providers.js              <-- Theme provider

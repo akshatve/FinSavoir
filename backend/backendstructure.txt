@@ -1,0 +1,26 @@
+backend/
+├── .env                    <-- Secret keys (DB password, Email password)
+├── requirements.txt        <-- List of Python packages to install
+├── alembic.ini             <-- Config for database migrations
+└── app/
+    ├── __init__.py
+    ├── main.py             <-- The entry point (runs the server)
+    ├── config.py           <-- Reads the .env file
+    ├── database.py         <-- Connects to PostgreSQL
+    │
+    ├── models/             <-- Database Tables (Python classes)
+    │   ├── __init__.py
+    │   └── user.py         <-- The User table
+    │
+    ├── schemas/            <-- Data validation (What the API expects/returns)
+    │   ├── __init__.py
+    │   └── user.py         <-- Register/Login request shapes
+    │
+    ├── routers/            <-- API Endpoints (URLs)
+    │   ├── __init__.py
+    │   └── auth.py         <-- /register, /login endpoints
+    │
+    └── core/               <-- Utilities
+        ├── __init__.py
+        ├── security.py     <-- Password hashing & JWT tokens
+        └── email.py        <-- Sending emails (like Nodemailer)

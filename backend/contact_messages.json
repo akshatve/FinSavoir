@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Test",
+    "email": "test@gmail.com",
+    "subject": "this is a test subject and the test user ",
+    "message": "this is a test message which is used to check weather the api is working or not and the data is send to the user or not ",
+    "received_at": "2026-10-30T08:47:34.706425"
+  }
+]
