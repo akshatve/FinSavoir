@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: finsavoir_db
+    restart: always
+    environment:
+      POSTGRES_USER: finsavoir_user
+      POSTGRES_PASSWORD: YOUR_STRONG_PASSWORD
+      POSTGRES_DB: finsavoir_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: finsavoir_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      # We override the DATABASE_URL here to point to the Docker DB container
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/finsavoir
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
