@@ -13,7 +13,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "FinSavoir",
-  description: "See the business. Beyond the stock price.",
+  description: "Know the Business. Beyond the stock price.",
 };
 
 export default function RootLayout({ children }) {

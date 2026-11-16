@@ -11,7 +11,7 @@ export default function FourSteps() {
       description:
         "Search by company name or stock symbol to begin your research. Open its available financial report and explore the statements, trends, and reporting periods in one place. Start with a business you follow.",
       cta: "Search a company",
-      link: "/search",
+      link: "/stocks",
       icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
     },
     {
@@ -20,7 +20,7 @@ export default function FourSteps() {
       description:
         "Explore how much revenue the company earns, the profit it generates, and how its operations turn into cash. Review its debt and financial ratios across annual, quarterly, and TTM periods.",
       cta: "Explore companies",
-      link: "/companies",
+      link: "/stocks",
       icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
     },
     {
@@ -131,7 +131,7 @@ export default function FourSteps() {
                   </p>
 
                   {/* Call to Action Link */}
-                  <Link
+                  {/* <Link
                     href={step.link}
                     className="inline-flex items-center gap-2 text-sm font-bold text-[#00296b] dark:text-gray-200 hover:text-[#003d9e] dark:hover:text-white transition-colors mt-auto group/link"
                   >
@@ -144,7 +144,7 @@ export default function FourSteps() {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </motion.div>
