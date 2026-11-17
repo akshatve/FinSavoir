@@ -43,11 +43,13 @@ router = APIRouter(prefix="/companies", tags=["Companies"])
 # 1. Search Route
 @router.get("/search", response_model=List[CompanyResponse])
 def search_companies(q: str = Query(..., min_length=1), db: Session = Depends(get_db)):
+    print(f"🔥 BACKEND HIT: Searching for '{q}'")  # ADD THIS
     search_term = f"%{q}%"
     companies = db.query(Company).filter(
         (Company.ticker.ilike(search_term)) | 
         (Company.name.ilike(search_term))
     ).limit(10).all()
+    print(f"✅ BACKEND FOUND: {len(companies)} results") # ADD THIS
     return companies
 
 # 2. THE OVERVIEW ROUTE (Connects to your function!)
