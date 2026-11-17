@@ -85,11 +85,19 @@ export async function getProfile() {
 
 
 
+// Update the search function to handle errors better
 export async function searchCompanies(query) {
-  const res = await fetch(`${API_URL}/companies/search?q=${query}`);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.detail || "Search failed");
-  return data;
+  try {
+    const res = await fetch(`${API_URL}/companies/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Search API Error:", error);
+    return []; // Return empty array so the UI doesn't crash
+  }
 }
 
 
