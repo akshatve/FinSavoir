@@ -1,3 +1,32 @@
+# from app.database import SessionLocal
+# from app.models.company import Company
+
+# db = SessionLocal()
+
+# companies = [
+#     Company(ticker="AAPL", name="Apple Inc.", sector="Technology", industry="Consumer Electronics"),
+#     Company(ticker="MSFT", name="Microsoft Corporation", sector="Technology", industry="Software"),
+#     Company(ticker="GOOGL", name="Alphabet Inc.", sector="Technology", industry="Internet Content"),
+#     Company(ticker="TSLA", name="Tesla, Inc.", sector="Consumer Cyclical", industry="Auto Manufacturers"),
+#     Company(ticker="AMZN", name="Amazon.com, Inc.", sector="Consumer Cyclical", industry="Internet Retail"),
+#     Company(ticker="NVDA", name="NVIDIA Corporation", sector="Technology", industry="Semiconductors"),
+#     Company(ticker="META", name="Meta Platforms, Inc.", sector="Technology", industry="Internet Content"),
+# ]
+
+# for c in companies:
+#     # Check if it already exists to avoid duplicates
+#     if not db.query(Company).filter(Company.ticker == c.ticker).first():
+#         db.add(c)
+
+# db.commit()
+# print(f"Added {len(companies)} companies to the database!")
+# db.close()
+
+
+
+
+
+
 import yfinance as yf
 from app.database import SessionLocal
 from app.models.company import Company
@@ -81,20 +110,23 @@ ALL_TICKERS = [
 def seed_database():
     db = SessionLocal()
     
+    # 1. Remove duplicates from your list automatically
+    unique_tickers = list(set(ALL_TICKERS))
+    
     added_count = 0
     skipped_count = 0
     
-    print(f"🚀 Starting to seed {len(ALL_TICKERS)} tickers...")
+    print(f"🚀 Starting to seed {len(unique_tickers)} unique tickers...")
 
-    for ticker in ALL_TICKERS:
-        # 1. Check if it already exists
+    for ticker in unique_tickers:
+        # Check if it already exists
         existing = db.query(Company).filter(Company.ticker == ticker).first()
         if existing:
             skipped_count += 1
             continue
             
         try:
-            # 2. Fetch real data from Yahoo Finance
+            # Fetch real data
             stock = yf.Ticker(ticker)
             info = stock.info
             
@@ -102,7 +134,6 @@ def seed_database():
             sector = info.get('sector', 'Unknown')
             industry = info.get('industry', 'Unknown')
             
-            # 3. Create the new company
             new_company = Company(
                 ticker=ticker,
                 name=name,
@@ -113,16 +144,12 @@ def seed_database():
             added_count += 1
             print(f"✅ Added: {ticker} - {name}")
             
+            # Commit immediately to avoid batch failures
+            db.commit()
+            
         except Exception as e:
             print(f"❌ Failed to fetch {ticker}: {e}")
+            db.rollback() # Important: Rollback on failure so the next one can proceed
             
-        # Commit every 10 to avoid huge transactions
-        if added_count % 10 == 0:
-            db.commit()
-
-    db.commit()
     print(f"\n🎉 DONE! Added {added_count} new companies. Skipped {skipped_count} existing.")
     db.close()
-
-if __name__ == "__main__":
-    seed_database()
