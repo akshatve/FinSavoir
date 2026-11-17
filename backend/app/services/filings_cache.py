@@ -19,31 +19,21 @@ def _fetch_filings():
 
     try:
         headers = {
-            "User-Agent": "FinSavoir contact@finsavoir.com",
+            "User-Agent": "FinSavoir admin@finsavoir.com", 
             "Accept-Encoding": "gzip, deflate",
             "Host": "www.sec.gov",
         }
         
-        # ─── PART 1: Fetch general recent filings (for /filings page) ───
-        general_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=&company=&dateb=&owner=include&count=300&output=atom"
-        print(f"[FILINGS CACHE] Fetching general filings (300)...")
-        general_res = requests.get(general_url, headers=headers, timeout=20)
-        general_res.encoding = "ISO-8859-1"
-        general_feed = feedparser.parse(general_res.content)
-        print(f"[FILINGS CACHE] General feed: {len(general_feed.entries)} entries")
-        
-        # ─── PART 2: Fetch dedicated 8-K feed (for /press-releases page) ───
-        # The "type=8-K" parameter filters to only 8-K filings
-        press_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom"
-        print(f"[FILINGS CACHE] Fetching 8-K press releases (100)...")
-        press_res = requests.get(press_url, headers=headers, timeout=20)
-        press_res.encoding = "ISO-8859-1"
-        press_feed = feedparser.parse(press_res.content)
-        print(f"[FILINGS CACHE] Press feed: {len(press_feed.entries)} entries")
+        # We will fetch multiple feeds to ensure all tabs have data
+        feeds_to_fetch = [
+            {"name": "General", "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=&company=&dateb=&owner=include&count=100&output=atom"},
+            {"name": "10-K", "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-K&company=&dateb=&owner=include&count=50&output=atom"},
+            {"name": "10-Q", "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-Q&company=&dateb=&owner=include&count=50&output=atom"},
+            {"name": "8-K", "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom"}
+        ]
         
         now = datetime.now(timezone.utc)
         
-        # ─── Parser helper ───
         def parse_entry(entry):
             raw_title = entry.title
             if " - " in raw_title:
@@ -56,7 +46,6 @@ def _fetch_filings():
                 form_type = "Unknown"
                 company_name = raw_title
             
-            # Skip "Reporting" persons — only keep Issuers
             if "(Reporting)" in raw_title:
                 return None
             
@@ -89,44 +78,64 @@ def _fetch_filings():
                 "published": pub_iso,
                 "link": entry.link,
             }
-        
-        # Parse both feeds
+
         all_filings = []
         press_releases = []
         
-        for entry in general_feed.entries:
-            parsed = parse_entry(entry)
-            if parsed:
-                all_filings.append(parsed)
-        
-        for entry in press_feed.entries:
-            parsed = parse_entry(entry)
-            if parsed:
-                press_releases.append(parsed)
-        
-        # Dedupe press releases by link
+        # Loop through all the feeds we want to fetch
+        for feed_info in feeds_to_fetch:
+            print(f"[FILINGS CACHE] Fetching {feed_info['name']}...")
+            res = requests.get(feed_info["url"], headers=headers, timeout=30)
+            
+            if res.status_code != 200:
+                print(f"[FILINGS CACHE] ✗ SEC Error on {feed_info['name']}: {res.status_code}")
+                continue
+                
+            res.encoding = "ISO-8859-1"
+            feed = feedparser.parse(res.content)
+            print(f"[FILINGS CACHE] {feed_info['name']} parsed: {len(feed.entries)} entries")
+            
+            for entry in feed.entries:
+                parsed = parse_entry(entry)
+                if parsed:
+                    all_filings.append(parsed)
+                    # If it's an 8-K, also add to press_releases list
+                    if parsed["form_type"].startswith("8-K"):
+                        press_releases.append(parsed)
+            
+            # Be nice to the SEC API and wait 1 second between requests
+            time.sleep(1)
+
+        # Dedupe filings by link
         seen = set()
-        unique_press = []
-        for f in press_releases:
+        unique_filings = []
+        for f in all_filings:
             if f["link"] not in seen:
                 seen.add(f["link"])
+                unique_filings.append(f)
+                
+        seen_press = set()
+        unique_press = []
+        for f in press_releases:
+            if f["link"] not in seen_press:
+                seen_press.add(f["link"])
                 unique_press.append(f)
-        
-        _filings_cache["data"] = all_filings
-        _filings_cache["press_releases"] = unique_press
-        _filings_cache["last_updated"] = datetime.now()
-        
-        elapsed = time.time() - start_time
-        print(f"[FILINGS CACHE] ✓ General: {len(all_filings)} filings | Press: {len(unique_press)} 8-Ks | {elapsed:.1f}s")
-    
+
+        if len(unique_filings) > 0:
+            _filings_cache["data"] = unique_filings
+            _filings_cache["press_releases"] = unique_press
+            _filings_cache["last_updated"] = datetime.now()
+            print(f"[FILINGS CACHE] ✓ Successfully cached {len(unique_filings)} total filings.")
+        else:
+            print("[FILINGS CACHE] ✗ Warning: 0 entries found across all feeds.")
+            
     except Exception as e:
-        print(f"[FILINGS CACHE] ✗ ERROR: {type(e).__name__}: {e}")
+        print(f"[FILINGS CACHE] ✗ EXCEPTION: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
     
     finally:
         _filings_cache["is_loading"] = False
-
 
 
 

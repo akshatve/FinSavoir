@@ -20,13 +20,13 @@ export default function CompanyLayout({ children, params }) {
 
   const menuItems = [
     { name: "Overview", path: `/company/${ticker}` },
-    { name: "Pro Score", path: `/company/${ticker}/pro-score` }, // <-- ADD THIS
-    { name: "Summary", path: `/company/${ticker}/summary` }, // <-- ADD THIS
+    { name: "Pro Score", path: `/company/${ticker}/pro-score` },
+    { name: "Summary", path: `/company/${ticker}/summary` },
     { name: "Financials", path: `/company/${ticker}/financials` },
     { name: "Chart", path: `/company/${ticker}/chart` },
     { name: "Statistics", path: `/company/${ticker}/statistics` },
     { name: "News", path: `/company/${ticker}/news` },
-    { name: "Filings", path: `/company/${ticker}/filings` }, // <-- ADD THIS
+    { name: "Filings", path: `/company/${ticker}/filings` },
     { name: "Compare", path: `/company/${ticker}/compare` },
   ];
 
@@ -201,15 +201,15 @@ export default function CompanyLayout({ children, params }) {
             </div>
           </div>
 
-          {/* Horizontal Tabs */}
-          <nav className="flex px-6 gap-8 border-t border-gray-100 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/20">
+          {/* Horizontal Tabs (UPDATED FOR MOBILE SCROLLING) */}
+          <nav className="flex px-4 sm:px-6 gap-6 sm:gap-8 border-t border-gray-100 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/20 overflow-x-auto whitespace-nowrap scrollbar-hide">
             {menuItems.map((item) => {
               const isActive = pathname === item.path;
               return (
                 <Link
                   key={item.name}
                   href={item.path}
-                  className={`relative py-4 text-sm font-semibold transition-colors ${
+                  className={`relative py-4 text-sm font-semibold transition-colors flex-shrink-0 ${
                     isActive
                       ? "text-[#094cb9] dark:text-[#0b55cc]"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
