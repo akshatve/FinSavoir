@@ -68,31 +68,6 @@ export default function Navbar() {
   }, [showDemo, mobileMenuOpen]);
 
   // Handle Search Debounce
-  // useEffect(() => {
-  //   if (query.length < 1) {
-  //     setResults([]);
-  //     setShowDropdown(false);
-  //     return;
-  //   }
-
-  //   const delayDebounceFn = setTimeout(async () => {
-  //     setIsSearching(true);
-  //     try {
-  //       const data = await searchCompanies(query);
-  //       setResults(data);
-  //       setShowDropdown(true);
-  //     } catch (err) {
-  //       console.error(err);
-  //     } finally {
-  //       setIsSearching(false);
-  //     }
-  //   }, 300);
-
-  //   return () => clearTimeout(delayDebounceFn);
-  // }, [query]);
-
-
-  // Handle Search Debounce
   useEffect(() => {
     if (query.length < 1) {
       setResults([]);
@@ -100,24 +75,14 @@ export default function Navbar() {
       return;
     }
 
-    // ADD THIS LOG
-    console.log("⌨️ [Navbar] User typing:", query);
-
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
       try {
-        // ADD THIS LOG
-        console.log("⏳ [Navbar] Debounce finished, calling API...");
-        
         const data = await searchCompanies(query);
-        
-        // ADD THIS LOG
-        console.log("✅ [Navbar] Data received:", data);
-        
         setResults(data);
         setShowDropdown(true);
       } catch (err) {
-        console.error("❌ [Navbar] Catch block:", err);
+        console.error(err);
       } finally {
         setIsSearching(false);
       }
@@ -125,8 +90,6 @@ export default function Navbar() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
-
-
 
   // Close dropdown when clicking outside (desktop + mobile search)
   useEffect(() => {

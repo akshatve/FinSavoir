@@ -85,25 +85,11 @@ export async function getProfile() {
 
 
 
-// Update the search function to handle errors better
 export async function searchCompanies(query) {
-  const url = `${API_URL}/companies/search?q=${encodeURIComponent(query)}`;
-  
-  // ADD THIS LOG
-  console.log("🚀 [searchCompanies] Firing request to:", url);
-
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    
-    // ADD THIS LOG
-    console.log("📡 [searchCompanies] Response status:", res.status);
-
-    if (!res.ok) throw new Error("Search failed");
-    return await res.json();
-  } catch (err) {
-    console.error("❌ [searchCompanies] Error:", err);
-    return [];
-  }
+  const res = await fetch(`${API_URL}/companies/search?q=${query}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Search failed");
+  return data;
 }
 
 
