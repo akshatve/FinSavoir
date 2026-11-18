@@ -9,6 +9,11 @@ second run this command :- python -m uvicorn app.main:app --reload
 backend :- http://127.0.0.1:8000/docs
 
 
+
+for deoloyed backend logs :- docker logs -f finsavoir_backend
+for deployed server refresh backend :- docker compose up -d --build
+
+
 after cleaning the database run this command to again make the docker container 
 docker run --name finsavoir-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=finsavoir -p 5432:5432 -d postgres
 

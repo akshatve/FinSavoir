@@ -25,6 +25,9 @@ export default function Hero() {
   const [isDeleting, setIsDeleting] = useState(false);
   const fullText = "Master the Investment.";
 
+  // Desktop detection — animation only runs on desktop/laptop
+  const [isDesktop, setIsDesktop] = useState(false);
+
   // Popular / Trending Tickers
   const trendingTickers = [
     { ticker: "AAPL", name: "Apple Inc.", change: "+1.2%" },
@@ -32,6 +35,30 @@ export default function Hero() {
     { ticker: "TSLA", name: "Tesla Inc.", change: "-2.1%" },
     { ticker: "MSFT", name: "Microsoft Corp.", change: "+0.8%" },
   ];
+
+  // Detect desktop vs mobile (and react to resize)
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      // >= 1024px is desktop/laptop (Tailwind lg breakpoint)
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
+  }, []);
+
+  // Ensure static text is shown on mobile (no animation)
+  useEffect(() => {
+    if (!isDesktop) {
+      setTypedText(fullText);
+      setIsDeleting(false);
+    } else {
+      // Reset so the typing animation can start fresh when switching to desktop
+      setTypedText("");
+      setIsDeleting(false);
+    }
+  }, [isDesktop]);
 
   // Load recent searches from LocalStorage on mount
   useEffect(() => {
@@ -74,8 +101,10 @@ export default function Hero() {
     return () => clearTimeout(delayDebounceFn);
   }, [ticker]);
 
-  // Handle Infinite Typing/Deleting Animation
+  // Handle Infinite Typing/Deleting Animation — ONLY on desktop
   useEffect(() => {
+    if (!isDesktop) return; // <-- skip entirely on mobile/tablet
+
     let timeout;
     const type = () => {
       if (!isDeleting) {
@@ -96,7 +125,7 @@ export default function Hero() {
     };
     timeout = setTimeout(type, 100);
     return () => clearTimeout(timeout);
-  }, [typedText, isDeleting]);
+  }, [typedText, isDeleting, isDesktop]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -137,24 +166,6 @@ export default function Hero() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[900px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-400/20 via-blue-100/5 to-transparent dark:from-blue-600/15 dark:via-transparent dark:to-transparent blur-3xl opacity-70" />
       </div>
 
-      {/* ================= BACKGROUND IMAGE (AI Generated) ================= */}
-      {/* <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 dark:opacity-0 transition-opacity duration-500"
-          style={{ backgroundImage: "url('/hero/dark.png')" }}
-        />
-
-      
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 dark:opacity-100 transition-opacity duration-500"
-          style={{ backgroundImage: "url('/hero/light.png')" }}
-        />
-
-        
-        <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-white/95 dark:from-[#0a0a0a]/70 dark:via-[#0a0a0a]/40 dark:to-[#0a0a0a]/95" />
-      </div> */}
-
       {/* ================= MAIN CONTENT ================= */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -179,8 +190,15 @@ export default function Hero() {
         <h1 className="text-5xl md:text-7xl lg:text-[75px] font-black tracking-tighter mb-6 text-slate-900 dark:text-white leading-[1.05]">
           Know the Business. <br className="hidden md:block" />
           <span className="bg-clip-text text-transparent bg-[#0442a5]">
-            {typedText}
-            <span className="inline-block w-[4px] h-[0.9em] ml-1 bg-[#094cb9] dark:bg-[#094cb9] align-middle animate-pulse"></span>
+            {isDesktop ? (
+              <>
+                {typedText}
+                <span className="inline-block w-[4px] h-[0.9em] ml-1 bg-[#094cb9] dark:bg-[#094cb9] align-middle animate-pulse"></span>
+              </>
+            ) : (
+              // Static text on mobile — no cursor, no animation
+              <>{fullText}</>
+            )}
           </span>
         </h1>
 
