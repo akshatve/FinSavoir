@@ -58,38 +58,14 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div>
                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                  Email
+                  Email & Support
                 </p>
                 <a
-                  href="mailto:hello@finsavoir.com"
+                  href="mailto:finsavoir30@gmail.com"
                   className="text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  hello@finsavoir.com
+                  finsavoir30@gmail.com
                 </a>
-              </div>
-
-              <div>
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                  Support
-                </p>
-                <a
-                  href="mailto:support@finsavoir.com"
-                  className="text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
-                  support@finsavoir.com
-                </a>
-              </div>
-
-              <div>
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                  Office
-                </p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  New York, NY
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  United States
-                </p>
               </div>
 
               <div>
