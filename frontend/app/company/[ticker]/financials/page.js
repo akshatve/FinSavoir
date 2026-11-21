@@ -319,7 +319,7 @@ export default function FinancialsPage({ params }) {
                   {activeTab === "balance" && "Assets & Liabilities"}
                   {activeTab === "cash" && "Operating Cash Flow"}
                 </h3>
-                <p className="text-xs text-gray-500 mt-1">Source: SEC EDGAR XBRL filings</p>
+                <p className="text-xs text-gray-500 mt-1">Source: Yahoo Finance</p>
               </div>
               <span className="hidden sm:inline-block px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest bg-gray-100 dark:bg-gray-900 text-gray-500 rounded">
                 {period === "quarterly" ? "Quarterly" : "Annual"} View

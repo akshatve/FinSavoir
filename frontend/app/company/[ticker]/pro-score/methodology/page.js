@@ -3,6 +3,9 @@
 import React, { use } from "react";
 import Link from "next/link";
 
+// Date the methodology text below last changed. Update it with the text.
+const METHODOLOGY_UPDATED = "November 21, 2026";
+
 export default function MethodologyPage({ params }) {
   const unwrappedParams = use(params);
   const ticker = unwrappedParams.ticker.toUpperCase();
@@ -28,7 +31,7 @@ export default function MethodologyPage({ params }) {
               Methodology
             </span>
             <span className="text-xs font-bold uppercase tracking-widest text-gray-500">
-              Version pro_score_v1
+              Version pro_score_v2
             </span>
           </div>
 
@@ -39,7 +42,7 @@ export default function MethodologyPage({ params }) {
             A transparent, rule-based system that places a company's reported figures on two 0–100 scales. Every input, anchor, weight and rule is published below.
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-            Last updated {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            Last updated {METHODOLOGY_UPDATED}
           </p>
         </div>
       </div>
@@ -92,9 +95,7 @@ export default function MethodologyPage({ params }) {
             <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
               FinSavoir's Pro Score places a company's reported financial numbers on two 0–100 scales — <strong>Financial Quality</strong> and <strong>Business & Balance-Sheet Risk</strong> — with published rules, showing every input, its source and its contribution.
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              Note: The Valuation and Overall Stock Risk cards are currently marked Unavailable because FinSavoir does not yet display licensed share prices. They are never replaced with a fundamentals-only substitute.
-            </p>
+            
           </section>
 
           {/* TWO SCORES */}
@@ -132,7 +133,7 @@ export default function MethodologyPage({ params }) {
             <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">How a score is calculated</h2>
             <div className="space-y-4">
               {[
-                { n: "01", title: "Measure", body: "Each input comes from the company's annual (fiscal-year) report, filed with the SEC. Inputs are either reported values or FinSavoir's versioned ratio calculations. Every value links to its filing, XBRL tag and dates." },
+                { n: "01", title: "Measure", body: "Each input comes from the company's annual (fiscal-year) report, filed with the SEC. Inputs are either reported values or FinSavoir's versioned ratio calculations. The Filings tab links to each original document on SEC.gov." },
                 { n: "02", title: "Transform to points", body: "Each measure is mapped linearly onto 0–100 points between two fixed anchors. Values beyond an anchor are capped at 0 or 100. This handles outliers: an extreme value cannot earn more than full points or lose more than zero." },
                 { n: "03", title: "Weight", body: "The score is the weighted mean of the points of the measures that have data. Each measure's contribution is its points × its effective weight. The contributions add up to the score." },
                 { n: "04", title: "Check minimum data", body: "A score is shown only when the company has at least 3 fiscal years of reported data. Otherwise it reads Insufficient data and names what is missing." },
@@ -158,7 +159,6 @@ export default function MethodologyPage({ params }) {
                 {[
                   "A missing input is excluded, never counted as zero. The remaining weights are scaled up.",
                   "Ratios that divide by earnings are not calculated when net income is not positive.",
-                  "Negative equity scores the highest risk on the leverage measure, and the reason is shown.",
                   "Non-positive operating cash flow means debt payback scores 0 points. No negative number of years is shown.",
                   "Stability measures need at least 4 fiscal years; worst-year and count measures need 3.",
                   "Every scored measure is a ratio or a count within one company's own statements, so reporting currency cannot distort it.",
@@ -265,12 +265,12 @@ export default function MethodologyPage({ params }) {
               </div>
               <div className="bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl p-4">
                 <h4 className="font-bold text-red-800 dark:text-red-400 text-sm mb-2">Increases Risk</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Lists quality measures scoring 40 or less and risk measures scoring 50 or more.</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Lists quality measures scoring below 40 and risk measures scoring 50 or more.</p>
               </div>
             </div>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li>· Financial Quality is described as <strong>strong</strong> (70+), <strong>mixed</strong> (45–69) or <strong>weak</strong> (below 45).</li>
-              <li>· Business risk is described as <strong>elevated</strong> (60+), <strong>moderate</strong> (35–59) or <strong>low</strong> (below 35).</li>
+              
+              
               <li>· It never recommends buying, selling or holding.</li>
             </ul>
           </section>
@@ -283,14 +283,14 @@ export default function MethodologyPage({ params }) {
               <p>Anchors and weights are judgement-based, not fitted to outcomes.</p>
               <p>Annual data only; a quarter's change appears after the next annual report.</p>
               <p>Reported figures are taken as filed; accounting choices and one-off items are not adjusted.</p>
-              <p>Valuation and Overall Stock Risk are shown only when current share-price data is available.</p>
+              
             </div>
           </section>
 
           {/* FOOTER */}
           <div className="pt-12 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-500 space-y-2">
             <p className="font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600">Document Info</p>
-            <p>Version pro_score_v1 · Data source: SEC EDGAR XBRL filings</p>
+            <p>Version pro_score_v2 · Data source: SEC EDGAR XBRL filings</p>
             <p>FinSavoir does not provide investment advice. All scores are descriptive assessments of reported figures.</p>
           </div>
 

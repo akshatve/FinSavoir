@@ -15,107 +15,19 @@ const safeNumber = (value) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Upgraded Premium Mini Candlestick Chart
-const MiniCandles = ({ data }) => {
-  if (!data || data.length === 0) return null;
-
-  const width = 110;
-  const height = 45;
-  const padding = 2;
-
-  const allLows = data.map(d => d.low);
-  const allHighs = data.map(d => d.high);
-  const min = Math.min(...allLows);
-  const max = Math.max(...allHighs);
-  const range = max - min || 1;
-
-  const candleWidth = (width - padding * 2) / data.length;
-
+// Bar sized by the stock's real daily move, relative to the largest move in
+// the list. (FMP's movers feed has no intraday history, so no chart is drawn.)
+const ChangeBar = ({ change, maxAbs, positive }) => {
+  const width = maxAbs > 0 ? Math.max((Math.abs(change) / maxAbs) * 100, 4) : 0;
   return (
-    <svg width={width} height={height} className="overflow-visible">
-      {data.map((candle, i) => {
-        const isCandleUp = candle.close >= candle.open;
-        const color = isCandleUp ? "#10b981" : "#ef4444";
-        const yHigh = height - ((candle.high - min) / range) * height;
-        const yLow = height - ((candle.low - min) / range) * height;
-        const yOpen = height - ((candle.open - min) / range) * height;
-        const yClose = height - ((candle.close - min) / range) * height;
-        const bodyTop = Math.min(yOpen, yClose);
-        const bodyBottom = Math.max(yOpen, yClose);
-        const bodyHeight = Math.max(bodyBottom - bodyTop, 1.5);
-        const x = padding + i * candleWidth;
-        return (
-          <g key={i}>
-            <line x1={x + candleWidth / 2} y1={yHigh} x2={x + candleWidth / 2} y2={yLow} stroke={color} strokeWidth="1" />
-            <rect x={x + 1} y={bodyTop} width={candleWidth - 2} height={bodyHeight} fill={color} rx="0.5" />
-          </g>
-        );
-      })}
-    </svg>
+    <div className="w-[110px] h-2 rounded-full bg-gray-800 overflow-hidden" aria-hidden="true">
+      <div
+        className={`h-full rounded-full ${positive ? "bg-emerald-500" : "bg-red-500"}`}
+        style={{ width: `${width}%` }}
+      />
+    </div>
   );
 };
-
-// Generate realistic OHLC candles from FMP's simple change data
-const generateCandlesFromChange = (changePercent, numCandles = 15) => {
-  // Parse the change %
-  let change = 0;
-  if (typeof changePercent === "number") change = changePercent;
-  else if (typeof changePercent === "string") {
-    change = parseFloat(changePercent.replace(/[^0-9.-]/g, "")) || 0;
-  }
-
-  // Clamp extreme values (like +145% or -75%) so candles stay readable
-  const clampedChange = Math.max(Math.min(change, 20), -20);
-  const trendDirection = clampedChange >= 0 ? 1 : -1;
-  
-  // Each candle's body height (open-to-close range)
-  const avgBodySize = Math.abs(clampedChange) / numCandles * 1.5;
-  
-  // Generate a realistic random walk that starts and ends at the target price
-  const startPrice = 100;
-  const endPrice = startPrice * (1 + clampedChange / 100);
-  
-  const candles = [];
-  let currentPrice = startPrice;
-  
-  // Add some random "noise" to create natural ups and downs within the trend
-  const noiseAmplitude = avgBodySize * 2;
-  
-  for (let i = 0; i < numCandles; i++) {
-    const progress = i / (numCandles - 1);
-    const trendPrice = startPrice + (endPrice - startPrice) * progress;
-    
-    // Generate open/close with realistic movement
-    const open = currentPrice;
-    
-    // Random walk: 70% in trend direction, 30% random noise
-    const randomMove = (Math.random() - 0.5) * noiseAmplitude;
-    const trendMove = (trendPrice - open) * 0.3;
-    
-    // Small candles (30%), medium (50%), large (20%)
-    const sizeMultiplier = Math.random() < 0.3 ? 0.3 : Math.random() < 0.8 ? 1 : 2;
-    const close = open + (randomMove + trendMove) * sizeMultiplier;
-    
-    // Realistic wicks
-    const bodyTop = Math.max(open, close);
-    const bodyBottom = Math.min(open, close);
-    const wickTop = bodyTop + Math.random() * avgBodySize * 0.8;
-    const wickBottom = bodyBottom - Math.random() * avgBodySize * 0.8;
-    
-    candles.push({
-      open,
-      close,
-      high: wickTop,
-      low: wickBottom,
-    });
-    
-    currentPrice = close;
-  }
-  
-  return candles;
-};
-
-
 
 export default function MarketDashboard() {
   const [movers, setMovers] = useState({ gainers: [], losers: [] });
@@ -153,10 +65,14 @@ const gainersData = (movers.gainers || []).filter(isValidStock);
 const losersData = (movers.losers || []).filter(isValidStock);
 
 
-  const topGainersList = [...gainersData, ...gainersData].slice(0, 6);
-  const topGainersChart = [...gainersData, ...gainersData].slice(0, 3);
-  const topLosersList = [...losersData, ...losersData].slice(0, 6);
-  const topLosersChart = [...losersData, ...losersData].slice(0, 3);
+  // Never repeat a stock to fill space: show only what the feed returned.
+  const topGainersList = gainersData.slice(0, 6);
+  const topGainersChart = gainersData.slice(0, 3);
+  const topLosersList = losersData.slice(0, 6);
+  const topLosersChart = losersData.slice(0, 3);
+  const maxAbs = (rows) => Math.max(0, ...rows.map((r) => Math.abs(safeNumber(r.changesPercentage))));
+  const gainersMax = maxAbs(topGainersChart);
+  const losersMax = maxAbs(topLosersChart);
 
   return (
     <div className="space-y-10">
@@ -229,8 +145,7 @@ const losersData = (movers.losers || []).filter(isValidStock);
                     </div>
                   </div>
                   <div className="transform group-hover:scale-105 transition-transform duration-300">
-                    <MiniCandles data={generateCandlesFromChange(stock.changesPercentage)
-} />
+                    <ChangeBar change={change} maxAbs={gainersMax} positive={change >= 0} />
                   </div>
                 </Link>
               );
@@ -305,8 +220,7 @@ const losersData = (movers.losers || []).filter(isValidStock);
                     </div>
                   </div>
                   <div className="transform group-hover:scale-105 transition-transform duration-300">
-                    <MiniCandles data={generateCandlesFromChange(stock.changesPercentage)
-} />
+                    <ChangeBar change={change} maxAbs={losersMax} positive={change >= 0} />
                   </div>
                 </Link>
               );

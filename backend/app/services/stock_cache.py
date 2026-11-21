@@ -4,6 +4,7 @@ import time
 import requests
 from app.config import settings
 from datetime import datetime
+from app.services.market_data import dividend_yield_from_info
 
 # Global in-memory cache
 _stock_cache = {
@@ -123,7 +124,7 @@ def _fetch_all_stocks():
                         "pe_ratio": info.get("trailingPE"),
                         "forward_pe": info.get("forwardPE"),
                         "eps": info.get("trailingEps"),
-                        "dividend_yield": info.get("dividendYield"),
+                        "dividend_yield": dividend_yield_from_info(info),
                         "beta": info.get("beta"),
                         "volume": info.get("volume"),
                         "avg_volume": info.get("averageVolume"),

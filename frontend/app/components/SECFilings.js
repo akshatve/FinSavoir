@@ -63,7 +63,7 @@ export default function SECFilings() {
               Latest SEC Filings
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Real-time documents straight from SEC EDGAR
+              The latest documents filed on SEC EDGAR
             </p>
           </div>
 

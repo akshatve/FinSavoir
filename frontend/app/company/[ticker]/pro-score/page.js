@@ -260,7 +260,7 @@ export default function ProScorePage({ params }) {
             score={data.business_risk.score}
             label="Business Risk"
             colorClass={getScoreColor(data.business_risk.score, true)}
-            subtitle="Higher = more measured risk (safer)."
+            subtitle="Higher = less measured risk (safer)."
           />
           <div className="flex-1 space-y-3 w-full">
             <div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-800 pb-2">

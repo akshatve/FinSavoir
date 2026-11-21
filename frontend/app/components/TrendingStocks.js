@@ -50,22 +50,6 @@ const MiniCandles = ({ data, isPositive }) => {
   );
 };
 
-// Helper to generate realistic fake candles if data is missing
-const generateFakeCandles = (count, isUp) => {
-  let candles = [];
-  let currentPrice = 100;
-  for (let i = 0; i < count; i++) {
-    const move = (Math.random() - (isUp ? 0.3 : 0.7)) * 5;
-    const open = currentPrice;
-    const close = open + move;
-    const high = Math.max(open, close) + Math.random() * 2;
-    const low = Math.min(open, close) - Math.random() * 2;
-    candles.push({ open, close, high, low });
-    currentPrice = close;
-  }
-  return candles;
-};
-
 export default function TrendingStocks() {
   // 10 minutes TTL for Trending Stocks
   const { data: trending, loading } = useCachedData(
@@ -111,7 +95,7 @@ export default function TrendingStocks() {
             </svg>
             Trending Now
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-3 text-lg font-medium">The most actively traded stocks today</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-3 text-lg font-medium">Daily moves in widely followed large-cap stocks</p>
         </div>
 
         {/* Marquee Container */}
@@ -146,13 +130,11 @@ export default function TrendingStocks() {
                     
                     {/* Candles */}
                     <div className="transform group-hover:scale-105 transition-transform duration-300">
-                      <MiniCandles 
-                        data={
-                          stock.candles && stock.candles.length > 5 
-                            ? stock.candles.slice(-15) 
-                            : generateFakeCandles(15, isPositive)
-                        } 
-                      />
+                      {stock.candles && stock.candles.length > 1 ? (
+                        <MiniCandles data={stock.candles.slice(-15)} />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-gray-400">Chart unavailable</span>
+                      )}
                     </div>
                   </div>
                 </Link>

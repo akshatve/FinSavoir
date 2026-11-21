@@ -149,22 +149,16 @@ export default function LoginPage() {
               See the business. <br /> Beyond the stock price.
             </h1>
             <p className="text-lg text-blue-100 mb-8 leading-relaxed">
-              Join thousands of investors using FinSavoir to understand companies through their SEC filings, cash flows, and peer comparisons.
+              Sign in to your FinSavoir account to view your profile.
             </p>
 
             <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl">
-              <p className="text-sm italic text-blue-50 mb-4">
-                "FinSavoir completely changed how I do fundamental analysis. Having the source filings one click away saves me hours every week."
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3">
+                Built on public filings
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#00296b] border border-white/30 rounded-full flex items-center justify-center font-bold text-sm">
-                  JD
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Jane Doe</p>
-                  <p className="text-xs text-blue-200">Portfolio Manager</p>
-                </div>
-              </div>
+              <p className="text-sm text-blue-50 leading-relaxed">
+                Pro Scores, summaries and filing history are built from documents companies file with the U.S. SEC. Company pages are free to read without an account.
+              </p>
             </div>
           </motion.div>
         </div>

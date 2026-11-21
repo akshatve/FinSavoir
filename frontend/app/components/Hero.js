@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { searchCompanies } from "../../lib/api";
+import { searchCompanies, getMarqueeStocks } from "../../lib/api";
 
 export default function Hero() {
   const [ticker, setTicker] = useState("");
@@ -28,13 +28,25 @@ export default function Hero() {
   // Desktop detection — animation only runs on desktop/laptop
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Popular / Trending Tickers
+  // Popular tickers. Daily change comes from the live price cache; until it
+  // loads (or if it is unavailable) the change is shown as "—", never guessed.
+  const [quotes, setQuotes] = useState({});
   const trendingTickers = [
-    { ticker: "AAPL", name: "Apple Inc.", change: "+1.2%" },
-    { ticker: "NVDA", name: "NVIDIA Corp.", change: "+4.5%" },
-    { ticker: "TSLA", name: "Tesla Inc.", change: "-2.1%" },
-    { ticker: "MSFT", name: "Microsoft Corp.", change: "+0.8%" },
-  ];
+    { ticker: "AAPL", name: "Apple Inc." },
+    { ticker: "NVDA", name: "NVIDIA Corp." },
+    { ticker: "TSLA", name: "Tesla Inc." },
+    { ticker: "MSFT", name: "Microsoft Corp." },
+  ].map((t) => ({ ...t, change: quotes[t.ticker]?.change_pct ?? null }));
+
+  useEffect(() => {
+    getMarqueeStocks()
+      .then((rows) => {
+        const byTicker = {};
+        (rows || []).forEach((r) => (byTicker[r.ticker] = r));
+        setQuotes(byTicker);
+      })
+      .catch(() => {});
+  }, []);
 
   // Detect desktop vs mobile (and react to resize)
   useEffect(() => {
@@ -182,7 +194,7 @@ export default function Hero() {
         >
           <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-wide uppercase">
-            Trusted by 10,000+ Investors
+            Free · Built on SEC EDGAR filings
           </span>
         </motion.div>
 
@@ -361,9 +373,17 @@ export default function Hero() {
                                   </div>
                                 </div>
                                 <span
-                                  className={`text-xs font-bold ${t.change.startsWith("+") ? "text-emerald-500" : "text-red-500"}`}
+                                  className={`text-xs font-bold ${
+                                    t.change === null
+                                      ? "text-gray-400"
+                                      : t.change >= 0
+                                        ? "text-emerald-500"
+                                        : "text-red-500"
+                                  }`}
                                 >
-                                  {t.change}
+                                  {t.change === null
+                                    ? "—"
+                                    : `${t.change >= 0 ? "+" : ""}${t.change.toFixed(2)}%`}
                                 </span>
                               </button>
                             ))}

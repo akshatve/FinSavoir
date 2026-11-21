@@ -38,6 +38,7 @@ export default function CompanyLayout({ children, params }) {
           price: res.current_price,
           prevClose: res.previous_close,
           name: res.name,
+          exchange: res.exchange,
         });
       } catch (err) {
         console.error("Failed to load price");
@@ -54,6 +55,7 @@ export default function CompanyLayout({ children, params }) {
           price: res.current_price,
           prevClose: res.previous_close,
           name: res.name,
+          exchange: res.exchange,
         };
         setPriceData(data);
 
@@ -103,9 +105,11 @@ export default function CompanyLayout({ children, params }) {
                   <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                     {ticker}
                   </h1>
+                  {priceData?.exchange && (
                   <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md border border-gray-200 dark:border-gray-700">
-                    NASDAQ
+                    {priceData.exchange}
                   </span>
+                  )}
                 </div>
                 <p className="text-base text-gray-500 dark:text-gray-400 mt-1 font-medium">
                   {priceData?.name || "Loading..."}

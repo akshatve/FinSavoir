@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useRef } from "react";
 import { compareCompanies, getComparisonHistory, searchCompanies, getCompanyOverview, getSectorCompanies } from "../../../../lib/api";
-import { formatNumber, formatCurrency, formatPercent } from "../../../../lib/format";
+import { formatNumber, formatCurrency, formatLargeCurrency, formatPercent } from "../../../../lib/format";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 export default function ComparePage({ params }) {
@@ -159,6 +159,7 @@ export default function ComparePage({ params }) {
 
     const format = (v) => {
       if (v === null || v === undefined) return "—";
+      if (formatType === "largeCurrency") return formatLargeCurrency(v);
       if (formatType === "currency") return formatCurrency(v);
       if (formatType === "percent") return formatPercent(v);
       return formatNumber(v);
@@ -471,8 +472,8 @@ export default function ComparePage({ params }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div>
-                <ComparisonBar label="Market Cap" val1={data.company1.market_cap} val2={data.company2.market_cap} formatType="currency" />
-                <ComparisonBar label="Revenue (TTM)" val1={data.company1.revenue} val2={data.company2.revenue} formatType="currency" />
+                <ComparisonBar label="Market Cap" val1={data.company1.market_cap} val2={data.company2.market_cap} formatType="largeCurrency" />
+                <ComparisonBar label="Revenue (TTM)" val1={data.company1.revenue} val2={data.company2.revenue} formatType="largeCurrency" />
                 <ComparisonBar label="P/E Ratio" val1={data.company1.pe_ratio} val2={data.company2.pe_ratio} formatType="number" lowerBetter={true} />
               </div>
               <div>
@@ -501,8 +502,8 @@ export default function ComparePage({ params }) {
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {[
                     { label: "Price", v1: data.company1.price, v2: data.company2.price, fmt: "currency" },
-                    { label: "Market Cap", v1: data.company1.market_cap, v2: data.company2.market_cap, fmt: "currency" },
-                    { label: "Revenue (TTM)", v1: data.company1.revenue, v2: data.company2.revenue, fmt: "currency" },
+                    { label: "Market Cap", v1: data.company1.market_cap, v2: data.company2.market_cap, fmt: "largeCurrency" },
+                    { label: "Revenue (TTM)", v1: data.company1.revenue, v2: data.company2.revenue, fmt: "largeCurrency" },
                     { label: "P/E Ratio", v1: data.company1.pe_ratio, v2: data.company2.pe_ratio, fmt: "number" },
                     { label: "EPS (TTM)", v1: data.company1.eps, v2: data.company2.eps, fmt: "number" },
                     { label: "Profit Margin", v1: data.company1.profit_margin, v2: data.company2.profit_margin, fmt: "percent" },
@@ -511,6 +512,7 @@ export default function ComparePage({ params }) {
                   ].map((row) => {
                     const fmt = (v) => {
                       if (v === null || v === undefined) return "—";
+                      if (row.fmt === "largeCurrency") return formatLargeCurrency(v);
                       if (row.fmt === "currency") return formatCurrency(v);
                       if (row.fmt === "percent") return formatPercent(v);
                       return formatNumber(v);

@@ -4,11 +4,11 @@ export default function AnnouncementBar() {
   const features = [
     { text: "SEC Filing Data" },
     { text: "Annual & Quarterly Financials" },
-    { text: "Trailing-Twelve-Month Views" },
+    { text: "Pro Score" },
     { text: "Peer Comparisons" },
     { text: "Cash Flow Analysis" },
     { text: "Financial Ratios" },
-    { text: "Source-Linked Figures" },
+    { text: "Plain-Language Summaries" },
     { text: "Company Watchlists" },
   ];
 

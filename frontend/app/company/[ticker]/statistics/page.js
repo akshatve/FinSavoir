@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { getCompanyStatistics } from "../../../../lib/api";
-import { formatNumber, formatPercent, formatCurrency } from "../../../../lib/format";
+import { formatNumber, formatPercent, formatCurrency, formatLargeCurrency } from "../../../../lib/format";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, AreaChart, Area } from "recharts";
 
 export default function StatisticsPage({ params }) {
@@ -46,10 +46,11 @@ export default function StatisticsPage({ params }) {
   if (!data) return null;
 
   // --- PREMIUM STAT ROW ---
-  const StatRow = ({ label, value, isPercent = false, isCurrency = false, highlight = false }) => {
+  const StatRow = ({ label, value, isPercent = false, isCurrency = false, isLargeCurrency = false, highlight = false }) => {
     let formattedValue = "—";
     if (value !== null && value !== undefined && value !== 0) {
       if (isPercent) formattedValue = formatPercent(value);
+      else if (isLargeCurrency) formattedValue = formatLargeCurrency(value);
       else if (isCurrency) formattedValue = formatCurrency(value);
       else formattedValue = formatNumber(value);
     }
@@ -121,7 +122,7 @@ export default function StatisticsPage({ params }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-[#094cb9] to-[#094cb9] rounded-2xl p-5 text-white shadow-lg shadow-blue-500/20">
           <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Market Cap</p>
-          <p className="text-2xl font-black tabular-nums">{formatCurrency(data.valuation.market_cap)}</p>
+          <p className="text-2xl font-black tabular-nums">{formatLargeCurrency(data.valuation.market_cap)}</p>
         </div>
         <div className="bg-gradient-to-br from-[#094cb9] to-[#094cb9] rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/20">
           <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">P/E Ratio (TTM)</p>
@@ -151,7 +152,7 @@ export default function StatisticsPage({ params }) {
               Valuation
             </h3>
           </div>
-          <StatRow label="Enterprise Value" value={data.valuation.enterprise_value} isCurrency />
+          <StatRow label="Enterprise Value" value={data.valuation.enterprise_value} isLargeCurrency />
           <StatRow label="P/E Ratio (TTM)" value={data.valuation.pe_ratio} />
           <StatRow label="Forward P/E" value={data.valuation.forward_pe} />
           <StatRow label="PEG Ratio" value={data.valuation.peg_ratio} />
@@ -243,10 +244,19 @@ export default function StatisticsPage({ params }) {
             </h3>
           </div>
           <div className="space-y-3">
-            <div className="flex justify-between items-baseline">
-              <span className="text-xs text-gray-400 uppercase tracking-wide font-semibold">52-Week High</span>
-              <span className="text-sm font-bold tabular-nums">{formatCurrency(data.valuation.market_cap ? data.valuation.market_cap * 0.05 : null)}</span>
-            </div>
+            {[
+              { label: "52-Week High", value: data.performance?.fifty_two_week_high, fmt: formatCurrency },
+              { label: "52-Week Low", value: data.performance?.fifty_two_week_low, fmt: formatCurrency },
+              { label: "52-Week Change", value: data.performance?.fifty_two_week_change, fmt: formatPercent },
+              { label: "Beta", value: data.performance?.beta, fmt: (v) => v.toFixed(2) },
+            ].map((row) => (
+              <div key={row.label} className="flex justify-between items-baseline">
+                <span className="text-xs text-gray-400 uppercase tracking-wide font-semibold">{row.label}</span>
+                <span className="text-sm font-bold tabular-nums">
+                  {row.value === null || row.value === undefined ? "Unavailable" : row.fmt(row.value)}
+                </span>
+              </div>
+            ))}
             <p className="text-[10px] text-gray-500 italic pt-2 border-t border-gray-800">Full performance data available on the Chart tab.</p>
           </div>
         </div>

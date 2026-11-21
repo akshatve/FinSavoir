@@ -125,7 +125,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <div className="flex flex-col md:flex-row items-center gap-4 text-xs font-medium text-gray-500">
-            <p>© {currentYear} FinSavoir, Inc. All rights reserved.</p>
+            <p>© {currentYear} FinSavoir. All rights reserved.</p>
             <div className="hidden md:block w-1 h-1 rounded-full bg-gray-700"></div>
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

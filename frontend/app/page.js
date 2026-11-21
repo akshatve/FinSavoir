@@ -8,7 +8,6 @@ import Features from "./components/Features";
 import DashboardPreview from "./components/DashboardPreview";
 import AnnouncementBar from "./components/AnnouncementBar";
 import FourSteps from "./components/FourSteps";
-import Testimonials from "./components/Testimonials";
 import CTASection from "./components/CTASection";
 import SectorHeatmap from "./components/SectorHeatmap"; // <-- Import
 import SECFilings from "./components/SECFilings"; // <-- Import
@@ -38,7 +37,6 @@ export default function Home() {
         <SECFilings />
       </div>
       {/* <DashboardPreview /> */}
-      <Testimonials />
       <CTASection />
     </div>
   );

@@ -64,9 +64,9 @@ export default function CTASection() {
             <ul className="space-y-4">
               {[
                 "Unrestricted access to SEC EDGAR filings",
-                "Build and track up to watchlists",
-                "See detail financial models of Stocks",
-                "Compare stocks peers side-by-side",
+                "Build and track a watchlist",
+                "See detailed financial statements",
+                "Compare peer stocks side by side",
               ].map((item, i) => (
                 <li
                   key={i}
@@ -96,7 +96,7 @@ export default function CTASection() {
           {/* RIGHT: Clean Email Capture Card */}
           <div className="bg-white dark:bg-[#111] p-8 lg:p-10 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-gray-200/60 dark:shadow-black/60">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Subscribe Our Newsletter 
+              Subscribe to our newsletter 
             </h3>
             {/* <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
               Enter your professional email to receive an early access link.

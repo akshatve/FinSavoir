@@ -12,6 +12,24 @@ from bs4 import BeautifulSoup # <-- Add this import at the top
 from fastapi import HTTPException
 
 
+def dividend_yield_from_info(info: dict):
+    """Dividend yield as a fraction (0.0123 == 1.23%), or None.
+
+    Yahoo's ``dividendYield`` field has been returned both as a fraction and as
+    a percentage depending on the yfinance version, which made FinSavoir show
+    yields 100x too large. Deriving it from the annual dividend and the price
+    avoids the ambiguity; ``trailingAnnualDividendYield`` is a fraction.
+    """
+    rate = info.get("dividendRate")
+    price = info.get("currentPrice") or info.get("regularMarketPrice")
+    if isinstance(rate, (int, float)) and isinstance(price, (int, float)) and price > 0:
+        return rate / price
+    trailing = info.get("trailingAnnualDividendYield")
+    if isinstance(trailing, (int, float)):
+        return trailing
+    return None
+
+
 
 
 def get_company_overview(ticker: str):
@@ -179,10 +197,16 @@ def get_company_statistics(ticker: str):
             },
             "dividends": {
                 "dividend_rate": info.get("dividendRate"),
-                "dividend_yield": info.get("dividendYield"),
+                "dividend_yield": dividend_yield_from_info(info),
                 "payout_ratio": info.get("payoutRatio"),
                 "ex_dividend_date": info.get("exDividendDate"),
-            }
+            },
+            "performance": {
+                "fifty_two_week_high": info.get("fiftyTwoWeekHigh"),
+                "fifty_two_week_low": info.get("fiftyTwoWeekLow"),
+                "fifty_two_week_change": info.get("52WeekChange"),
+                "beta": info.get("beta"),
+            },
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -280,7 +304,7 @@ def get_comparison_data(ticker1: str, ticker2: str):
                 "eps": info.get("trailingEps"),
                 "revenue": info.get("totalRevenue"),
                 "profit_margin": info.get("profitMargins"),
-                "dividend_yield": info.get("dividendYield"),
+                "dividend_yield": dividend_yield_from_info(info),
                 "beta": info.get("beta"),
             }
 
@@ -338,6 +362,7 @@ def get_company_overview(ticker: str):
         info = stock.info
         financials = stock.financials
         balance_sheet = stock.balance_sheet
+        cashflow = stock.cashflow
         
         if not info or 'symbol' not in info:
             raise HTTPException(status_code=404, detail="Company not found")
@@ -365,7 +390,8 @@ def get_company_overview(ticker: str):
         rev, rev_yoy = get_yoy(financials, "Total Revenue")
         ni, ni_yoy = get_yoy(financials, "Net Income")
         eps, eps_yoy = get_yoy(financials, "Diluted EPS")
-        fcf, fcf_yoy = get_yoy(financials, "Free Cash Flow")
+        # Free cash flow is a cash-flow statement line, not an income one.
+        fcf, fcf_yoy = get_yoy(cashflow, "Free Cash Flow")
         cash, cash_yoy = get_yoy(balance_sheet, "Cash And Cash Equivalents")
         debt, debt_yoy = get_yoy(balance_sheet, "Total Debt")
         equity, equity_yoy = get_yoy(balance_sheet, "Stockholders Equity")
@@ -384,6 +410,7 @@ def get_company_overview(ticker: str):
             "description": info.get("longBusinessSummary", "No description available."),
             "website": info.get("website", ""),
             "fiscal_year": fiscal_year,
+            "exchange": info.get("fullExchangeName") or info.get("exchange"),
             
             # Price Data
             "current_price": info.get("currentPrice") or info.get("regularMarketPrice"),
@@ -403,7 +430,7 @@ def get_company_overview(ticker: str):
             "market_cap": info.get("marketCap"),
             "pe_ratio": info.get("trailingPE"),
             "forward_pe": info.get("forwardPE"),
-            "dividend_yield": info.get("dividendYield"),
+            "dividend_yield": dividend_yield_from_info(info),
             "beta": info.get("beta"),
         }
     except Exception as e:
@@ -529,16 +556,25 @@ def get_trending_stocks():
     for ticker in trending_tickers:
         try:
             stock = yf.Ticker(ticker)
-            hist = stock.history(period="5d")
+            hist = stock.history(period="1mo")
             info = stock.info
-            
+
             if len(hist) >= 2:
                 current = hist['Close'].iloc[-1]
                 prev = hist['Close'].iloc[-2]
                 change_pct = ((current - prev) / prev) * 100
                 
-                # Get 5-day sparkline data
-                sparkline = [round(p, 2) for p in hist['Close'].tolist()]
+                # Real daily OHLC for the mini chart (last 15 sessions).
+                candles = [
+                    {
+                        "open": round(float(row["Open"]), 2),
+                        "high": round(float(row["High"]), 2),
+                        "low": round(float(row["Low"]), 2),
+                        "close": round(float(row["Close"]), 2),
+                    }
+                    for _, row in hist.tail(15).iterrows()
+                ]
+                sparkline = [c["close"] for c in candles[-5:]]
                 
                 results.append({
                     "ticker": ticker,
@@ -546,6 +582,7 @@ def get_trending_stocks():
                     "price": round(current, 2),
                     "change_pct": round(change_pct, 2),
                     "sparkline": sparkline,
+                    "candles": candles,
                     "volume": info.get("volume", 0)
                 })
         except Exception:

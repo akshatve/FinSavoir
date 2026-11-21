@@ -15,83 +15,18 @@ const safeNumber = (value) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Custom Mini Candlestick Component
-const MiniCandles = ({ data }) => {
-  if (!data || data.length === 0) return null;
-
-  const width = 100;
-  const height = 40;
-  const padding = 1;
-
-  const allLows = data.map(d => d.low);
-  const allHighs = data.map(d => d.high);
-  const min = Math.min(...allLows);
-  const max = Math.max(...allHighs);
-  const range = max - min || 1;
-
-  const candleWidth = (width - padding * 2) / data.length;
-
+// Bar sized by the stock's real daily move relative to the largest move in
+// the list. FMP's movers feed has no price history, so no chart is drawn.
+const ChangeBar = ({ change, maxAbs, positive }) => {
+  const width = maxAbs > 0 ? Math.max((Math.abs(change) / maxAbs) * 100, 4) : 0;
   return (
-    <svg width={width} height={height} className="overflow-visible">
-      {data.map((candle, i) => {
-        const isCandleUp = candle.close >= candle.open;
-        const color = isCandleUp ? "#10b981" : "#ef4444";
-        const yHigh = height - ((candle.high - min) / range) * height;
-        const yLow = height - ((candle.low - min) / range) * height;
-        const yOpen = height - ((candle.open - min) / range) * height;
-        const yClose = height - ((candle.close - min) / range) * height;
-        const bodyTop = Math.min(yOpen, yClose);
-        const bodyBottom = Math.max(yOpen, yClose);
-        const bodyHeight = Math.max(bodyBottom - bodyTop, 2);
-        const x = padding + i * candleWidth;
-
-        return (
-          <g key={i}>
-            <line x1={x + candleWidth / 2} y1={yHigh} x2={x + candleWidth / 2} y2={yLow} stroke={color} strokeWidth="1.2" />
-            <rect x={x + 1} y={bodyTop} width={Math.max(candleWidth - 2, 3)} height={bodyHeight} fill={color} rx="0.5" />
-          </g>
-        );
-      })}
-    </svg>
+    <div className="w-20 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" aria-hidden="true">
+      <div
+        className={`h-full rounded-full ${positive ? "bg-emerald-500" : "bg-red-500"}`}
+        style={{ width: `${width}%` }}
+      />
+    </div>
   );
-};
-
-// Generate realistic OHLC candles from FMP's change %
-const generateCandlesFromChange = (changePercent, numCandles = 15) => {
-  let change = 0;
-  if (typeof changePercent === "number") change = changePercent;
-  else if (typeof changePercent === "string") {
-    change = parseFloat(changePercent.replace(/[^0-9.-]/g, "")) || 0;
-  }
-
-  const clampedChange = Math.max(Math.min(change, 20), -20);
-  const avgBodySize = Math.abs(clampedChange) / numCandles * 1.5;
-  const startPrice = 100;
-  const endPrice = startPrice * (1 + clampedChange / 100);
-  const noiseAmplitude = avgBodySize * 2;
-
-  const candles = [];
-  let currentPrice = startPrice;
-
-  for (let i = 0; i < numCandles; i++) {
-    const progress = i / (numCandles - 1);
-    const trendPrice = startPrice + (endPrice - startPrice) * progress;
-    const open = currentPrice;
-    const randomMove = (Math.random() - 0.5) * noiseAmplitude;
-    const trendMove = (trendPrice - open) * 0.3;
-    const sizeMultiplier = Math.random() < 0.3 ? 0.3 : Math.random() < 0.8 ? 1 : 2;
-    const close = open + (randomMove + trendMove) * sizeMultiplier;
-
-    const bodyTop = Math.max(open, close);
-    const bodyBottom = Math.min(open, close);
-    const wickTop = bodyTop + Math.random() * avgBodySize * 0.8;
-    const wickBottom = bodyBottom - Math.random() * avgBodySize * 0.8;
-
-    candles.push({ open, close, high: wickTop, low: wickBottom });
-    currentPrice = close;
-  }
-
-  return candles;
 };
 
 export default function MarketsPage() {
@@ -126,6 +61,10 @@ export default function MarketsPage() {
   const isValidStock = (s) => s && s.symbol && s.price !== undefined && s.price !== null;
   const gainersData = (movers.gainers || []).filter(isValidStock);
   const losersData = (movers.losers || []).filter(isValidStock);
+
+  const maxAbs = (rows) => Math.max(0, ...rows.map((r) => Math.abs(safeNumber(r.changesPercentage))));
+  const gainersMax = maxAbs(gainersData);
+  const losersMax = maxAbs(losersData);
 
   const topGainersCards = gainersData.slice(0, 3);
   const topLosersCards = losersData.slice(0, 3);
@@ -187,7 +126,7 @@ export default function MarketsPage() {
                     </div>
 
                     <div className="w-20 h-10 hidden sm:flex items-center opacity-70 group-hover:opacity-100 transition-opacity">
-                      <MiniCandles data={generateCandlesFromChange(stock.changesPercentage)} />
+                      <ChangeBar change={change} maxAbs={gainersMax} positive={change >= 0} />
                     </div>
 
                     <div className="text-right">
@@ -233,7 +172,7 @@ export default function MarketsPage() {
                     </div>
 
                     <div className="w-20 h-10 hidden sm:flex items-center opacity-70 group-hover:opacity-100 transition-opacity">
-                      <MiniCandles data={generateCandlesFromChange(stock.changesPercentage)} />
+                      <ChangeBar change={change} maxAbs={losersMax} positive={change >= 0} />
                     </div>
 
                     <div className="text-right">

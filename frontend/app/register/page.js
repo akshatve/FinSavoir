@@ -77,11 +77,11 @@ export default function RegisterPage() {
               Start your research <br /> in minutes.
             </h1>
             <p className="text-lg text-blue-100 mb-8 leading-relaxed">
-              Create a free account to save watchlists, compare peers, and trace financials back to their source filings.
+              Create a free account with a verified email. Company research, comparisons and the watchlist also work without one.
             </p>
 
             <div className="space-y-4">
-              {["Access to all SEC filings", "Save up to 3 watchlists", "Compare peer financials", "100% free to start"].map((item, i) => (
+              {["Free to create", "Email-verified sign-in", "Profile page with your watchlist summary", "Company pages stay free without an account"].map((item, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="bg-[#00296b]/50 border border-white/20 p-1 rounded-full">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
