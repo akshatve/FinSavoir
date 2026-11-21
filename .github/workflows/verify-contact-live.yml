@@ -1,0 +1,27 @@
+# Temporary: checks the live Contact page after the "contact info" change.
+# Lives only on this branch; delete the branch when done.
+name: Verify live contact page
+on: push
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll https://finsavoir.com/contact for up to 10 minutes
+        run: |
+          check() {
+            curl -sS --max-time 20 -H "Cache-Control: no-cache" "https://finsavoir.com/contact?v=$(date +%s)" -o contact.html -D headers.txt || return 1
+            NEW=$(grep -c 'mailto:finsavoir30@gmail.com' contact.html)
+            OLD=$(grep -cE 'hello@finsavoir\.com|support@finsavoir\.com|New York, NY' contact.html)
+            echo "$(date -u +%H:%M:%S) status=$(head -1 headers.txt | tr -d '\r') new_email=$NEW old_entries=$OLD"
+            [ "$NEW" -ge 1 ] && [ "$OLD" -eq 0 ]
+          }
+          for i in $(seq 1 11); do
+            if check; then echo "LIVE: new contact info is being served"; LIVE=1; break; fi
+            sleep 60
+          done
+          echo "--- response headers"; grep -iE "^(HTTP|server|x-nextjs|last-modified|etag|cf-cache-status|age)" headers.txt
+          echo "--- contact entries on the live page"
+          grep -oE 'mailto:[^"]+|New York, NY|United States|Email[^<]{0,12}Support|>Email<|>Support<|>Office<|Within 24 hours' contact.html | sort | uniq -c
+          [ -n "$LIVE" ] || echo "NOT LIVE: finsavoir.com is still serving the previous Contact page"
