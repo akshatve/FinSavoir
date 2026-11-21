@@ -1,0 +1,50 @@
+# Checks that need the public internet (real DNS, SEC EDGAR). They report
+# facts; they do not deploy anything.
+name: External checks
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/external-checks.yml"
+      - "backend/app/services/sec_facts.py"
+      - "backend/scripts/verify_sec_periods.py"
+
+permissions:
+  contents: read
+
+jobs:
+  hosting:
+    name: DNS and HTTP for finsavoir.com
+    runs-on: ubuntu-latest
+    steps:
+      - name: DNS records
+        run: |
+          for host in finsavoir.com www.finsavoir.com api.finsavoir.com; do
+            for type in NS SOA A AAAA CNAME; do
+              echo "--- $host $type"
+              dig +noall +answer +authority "$host" "$type" @1.1.1.1 || true
+            done
+          done
+          echo "--- registry (whois summary)"
+          whois finsavoir.com 2>/dev/null | grep -iE "registrar:|name server|creation date|expir|status" | head -20 || true
+      - name: HTTP responses
+        run: |
+          for url in https://finsavoir.com/ https://www.finsavoir.com/ https://api.finsavoir.com/; do
+            echo "--- $url"
+            curl -sS -o /dev/null -D - --max-time 20 "$url" | grep -iE "^(HTTP|server|location|x-powered-by|x-vercel|x-railway|cf-ray|via|x-render|x-nf|fly-)" || echo "(no response)"
+          done
+
+  sec-periods:
+    name: Verify SEC fiscal-year mapping against filings
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python scripts/verify_sec_periods.py AAPL MSFT NVDA KO JPM WMT
