@@ -32,8 +32,25 @@ jobs:
         run: |
           for url in https://finsavoir.com/ https://www.finsavoir.com/ https://api.finsavoir.com/; do
             echo "--- $url"
-            curl -sS -o /dev/null -D - --max-time 20 "$url" | grep -iE "^(HTTP|server|location|x-powered-by|x-vercel|x-railway|cf-ray|via|x-render|x-nf|fly-)" || echo "(no response)"
+            # All response headers except cookies.
+            curl -sS -o /dev/null -D - --max-time 20 "$url" | grep -viE "^set-cookie" || echo "(no response)"
           done
+      - name: Identify the deployed codebase
+        run: |
+          curl -sS --max-time 20 https://finsavoir.com/ -o home.html || exit 0
+          echo "--- <title> and description"
+          grep -oE "<title>[^<]*</title>" home.html | head -3
+          grep -oE '<meta name="description" content="[^"]*"' home.html | head -3
+          echo "--- markers of this repository (akshatve/FinSavoir)"
+          for m in "logo/logo2.png" "Know the Business" "FinSavoir AI" "FinLens" "Trusted by 10,000+" "Free · Built on SEC EDGAR filings"; do
+            printf '%-40s %s\n' "$m" "$(grep -c -F "$m" home.html)"
+          done
+          echo "--- API origins compiled into the JS bundles"
+          grep -oE '/_next/static/[^"]+\.js' home.html | sort -u | head -60 > chunks.txt
+          wc -l < chunks.txt
+          while read -r c; do curl -sS --max-time 20 "https://finsavoir.com$c"; echo; done < chunks.txt > bundle.js
+          grep -oE 'https?://[a-zA-Z0-9.-]+(:[0-9]+)?' bundle.js | grep -viE "w3\.org|reactjs|nextjs\.org|github\.com|tradingview|youtube|unsplash|picsum|financialmodelingprep\.com/image|sec\.gov|fonts\.|schema\.org|vercel\.app" | sort | uniq -c | sort -rn | head -20
+          grep -oE '127\.0\.0\.1:8000|localhost:8000' bundle.js | sort | uniq -c
 
   sec-periods:
     name: Verify SEC fiscal-year mapping against filings
