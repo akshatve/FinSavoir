@@ -165,11 +165,21 @@ export default function Navbar() {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-6">
           {/* Left: Logo */}
           <div className="flex-shrink-0">
+            {/* Both versions render; the .dark class (set by next-themes before paint) picks one, so there is no flash */}
             <Link href="/" className="flex items-center gap-2 group">
               <img
-                src="/logo/logo2.png"
-                alt="FinSavoir Logo"
-                className="w-28 sm:w-40 md:w-50 h-auto max-h-12 md:max-h-22 object-contain group-hover:scale-105 transition-transform"
+                src="/logo/finsavoir-logo-light.png"
+                alt="FinSavoir"
+                width={692}
+                height={319}
+                className="block dark:hidden h-16 w-auto object-contain group-hover:scale-105 transition-transform"
+              />
+              <img
+                src="/logo/finsavoir-logo-dark.png"
+                alt="FinSavoir"
+                width={678}
+                height={306}
+                className="hidden dark:block h-16 w-auto object-contain group-hover:scale-105 transition-transform"
               />
             </Link>
           </div>
