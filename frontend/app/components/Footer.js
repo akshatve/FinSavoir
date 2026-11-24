@@ -58,10 +58,13 @@ export default function Footer() {
           {/* Column 1: Brand */}
           <div className="lg:col-span-5 pr-8">
             <Link href="/" className="inline-block mb-6 group">
-              <img 
-                src="/logo/logo2.png" 
-                alt="FinSavoir Logo" 
-                className="h-16 w-auto object-contain group-hover:scale-105 transition-transform" 
+              {/* Footer background is always dark (#050505), so it always uses the dark-theme logo */}
+              <img
+                src="/logo/finsavoir-logo-dark.png"
+                alt="FinSavoir"
+                width={678}
+                height={306}
+                className="h-16 w-auto object-contain group-hover:scale-105 transition-transform"
               />
             </Link>
             
