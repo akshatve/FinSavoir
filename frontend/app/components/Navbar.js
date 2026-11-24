@@ -40,16 +40,72 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // === NEW: lock body scroll when mobile menu open ===
+  // === Demo video state ===
+  const [showDemo, setShowDemo] = useState(false);
+  // Picked once when the popup opens, so it stays stable during playback
+  const [demoSrc, setDemoSrc] = useState(null);
+  const demoDialogRef = useRef(null);
+  const demoCloseRef = useRef(null);
+  const demoVideoRef = useRef(null);
+  const demoTriggerRef = useRef(null);
+  const menuButtonRef = useRef(null);
+
+  const openDemo = () => {
+    demoTriggerRef.current = document.activeElement;
+    setDemoSrc(
+      window.matchMedia("(max-width: 767px)").matches
+        ? "/media/demo-mobile.mp4"
+        : "/media/demo-desktop.mp4"
+    );
+    setShowDemo(true);
+  };
+
+  // === NEW: lock body scroll when mobile menu or demo is open ===
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "unset";
+    document.body.style.overflow =
+      mobileMenuOpen || showDemo ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, showDemo]);
 
-  // === NEW: Demo video state ===
-  const [showDemo, setShowDemo] = useState(false);
+  // Demo: focus the close button on open; on close stop playback and restore focus
+  useEffect(() => {
+    if (!showDemo) return;
+    const video = demoVideoRef.current;
+    demoCloseRef.current?.focus();
+    return () => {
+      if (video) {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
+      // The mobile trigger lives in the menu, which is closed by now, so fall back to the menu button
+      const trigger = demoTriggerRef.current;
+      const target =
+        trigger && trigger.isConnected && trigger.offsetParent !== null
+          ? trigger
+          : menuButtonRef.current;
+      target?.focus();
+    };
+  }, [showDemo]);
+
+  // Keep Tab focus inside the demo dialog
+  const handleDemoKeyDown = (e) => {
+    if (e.key !== "Tab" || !demoDialogRef.current) return;
+    const focusables = demoDialogRef.current.querySelectorAll(
+      "button, video[controls]"
+    );
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   // Close on Escape key
   useEffect(() => {
@@ -225,7 +281,8 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* === WATCH DEMO BUTTON (DESKTOP ONLY) === */}
             <button
-              onClick={() => setShowDemo(true)}
+              onClick={openDemo}
+              aria-label="Watch Demo"
               className="relative hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white overflow-hidden group bg-[#00296b] transition-all duration-500 hover:shadow-lg"
             >
               <span className="absolute inset-0 block overflow-hidden rounded-lg pointer-events-none">
@@ -320,6 +377,7 @@ export default function Navbar() {
 
             {/* === HAMBURGER (MOBILE ONLY) === */}
             <button
+              ref={menuButtonRef}
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Toggle menu"
@@ -435,7 +493,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  setShowDemo(true);
+                  openDemo();
                 }}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-[#00296b] hover:bg-[#001f52] transition-colors"
               >
@@ -534,39 +592,49 @@ export default function Navbar() {
       {/* === Demo Video Modal === */}
       {showDemo && (
         <div
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          ref={demoDialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="FinSavoir demo video"
+          onKeyDown={handleDemoKeyDown}
+          className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pt-16 animate-in fade-in duration-200"
           onClick={() => setShowDemo(false)}
         >
+          <button
+            ref={demoCloseRef}
+            onClick={() => setShowDemo(false)}
+            className="absolute top-3 right-3 z-10 w-10 h-10 bg-white/15 hover:bg-white/25 ring-1 ring-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-label="Close video"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
           <div
-            className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300"
+            className="flex items-center justify-center animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => setShowDemo(false)}
-              className="absolute top-3 right-3 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-              aria-label="Close video"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2.5"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <iframe
-              src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1"
+            {/* Sized to the viewport with its own aspect ratio, so neither the landscape nor the portrait video is cropped or stretched */}
+            <video
+              ref={demoVideoRef}
+              key={demoSrc}
+              src={demoSrc}
               title="FinSavoir Demo"
-              className="w-full h-full"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
+              controls
+              playsInline
+              autoPlay
+              preload="metadata"
+              className="block w-auto h-auto max-w-[min(64rem,calc(100vw-2rem))] max-h-[calc(100dvh-5rem)] bg-black rounded-2xl shadow-2xl"
             />
           </div>
         </div>
